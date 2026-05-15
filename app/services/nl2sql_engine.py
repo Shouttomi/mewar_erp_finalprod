@@ -178,6 +178,26 @@ CRITICAL RULES (never violate):
 - projects `status` values are exactly: 'new' and 'in_progress' (lowercase with underscore) — NEVER use 'In Progress', 'inprogress', 'active', or any other variant
 - "in progress projects", "jo projects chal rahe hain", "current projects" means WHERE status='in_progress' — apply this filter strictly, do NOT return all projects
 - projects table date columns: `start_date` = project start, `end_date` = project end/deadline, `deadline` column is usually NULL — ALWAYS use `end_date` when asked for deadline, due date, end date, or "kab tak chalega"
+- PROJECT PROGRESS / STAGE PERCENTAGE: the projects table has NO progress/stage/percent column. When user asks about project progress, "kitna percent complete", "stage", "X% se upper", "X% se kam", compute progress from dates:
+    progress_pct =
+      CASE
+        WHEN end_date <= CURDATE() THEN 100
+        WHEN start_date >= CURDATE() THEN 0
+        WHEN DATEDIFF(end_date, start_date) = 0 THEN 100
+        ELSE ROUND(DATEDIFF(CURDATE(), start_date) * 100.0 / DATEDIFF(end_date, start_date))
+      END
+  Use this formula whenever the user asks anything about project progress, stage, or completion percentage. Filter with WHERE is_deleted=0.
+  Example for "kitne projects 25% se upper ho gaye hain":
+    SELECT id, name, start_date, end_date,
+      CASE WHEN end_date <= CURDATE() THEN 100
+           WHEN start_date >= CURDATE() THEN 0
+           WHEN DATEDIFF(end_date, start_date) = 0 THEN 100
+           ELSE ROUND(DATEDIFF(CURDATE(), start_date) * 100.0 / DATEDIFF(end_date, start_date))
+      END AS progress_pct
+    FROM projects
+    WHERE is_deleted=0
+    HAVING progress_pct > 25
+    ORDER BY progress_pct DESC
 - PROJECT NAME SEARCH: when user asks about a specific company/client name (e.g. "RBL Minerals ki detail", "RBL Minerals ki inventory"), ALWAYS search in `projects` table first (projects.name LIKE '%term%'), NOT in suppliers. A client/customer is a project, not a supplier. Only search suppliers when user explicitly says "supplier" or "vendor".
 - PROJECT INVENTORY ITEMS: a project's inventory comes from TWO sources — always include BOTH:
   (1) BOM chain: project_products -> product_items -> inventories (pp.project_id=p.id, pit.product_id=pp.product_id, i.id=pit.inventory_id)
