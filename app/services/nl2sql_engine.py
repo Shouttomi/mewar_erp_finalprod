@@ -200,11 +200,42 @@ CRITICAL RULES (never violate):
 - Hindi/Hinglish list words: "sarii", "saari", "saare", "sari", "sabhi", "sab", "sare" all mean "all" — fetch ALL rows with NO date or status filter unless the user also specifies one
 - Date day filter: "13 date wali", "13 tarikh wali", "only 13 date" means DAY(transaction_date) = 13 — use DAY() function
 - "X month wali" or "X mahine wali" means MONTH(transaction_date) = X
-- INVENTORY SHORTAGE IN PROJECTS: "kis project mein X ki shortage hai" or "which project needs X" means:
-  JOIN project_item pi ON pi.inventory_id = inventories.id, then check if pi.quantity > current_stock.
-  current_stock = COALESCE((SELECT SUM(CASE WHEN LOWER(txn_type)='in' THEN quantity ELSE -quantity END) FROM stock_transactions WHERE inventory_id = i.id), i.opening_quantity, 0)
-  A project has a shortage if pi.quantity > current_stock for that item.
-  Return: project name, item name, required quantity (pi.quantity), available stock, shortage = pi.quantity - stock.
+- INVENTORY SHORTAGE IN PROJECTS: "kis project mein X ki shortage hai", "which projects need X", "kin kin projects me bolts ki kami hai":
+  A project needs item X if its required_qty for X (from BOM + direct) is greater than the item's current stock.
+  Required comes from TWO sources — always union both:
+    (1) BOM chain: project_products -> product_items -> inventories
+    (2) Direct: project_item -> inventories
+  Use derived subqueries so each row already has aggregated required_qty + current_stock — avoids MySQL "Unknown column in HAVING" errors that happen when you mix GROUP BY with non-aggregated columns in HAVING.
+  Use this EXACT SQL pattern (replace 'X' with the item search term, e.g. 'bolt'):
+
+  SELECT t.project_id, t.project_name, t.inventory_id, t.item_name, t.item_model,
+    SUM(t.required_qty) AS required_qty,
+    t.current_stock,
+    SUM(t.required_qty) - t.current_stock AS shortage
+  FROM (
+    SELECT p.id AS project_id, p.name AS project_name,
+      i.id AS inventory_id, i.name AS item_name, i.model AS item_model,
+      pp.quantity * pit.quantity AS required_qty,
+      COALESCE(i.opening_quantity,0) + COALESCE((SELECT SUM(CASE WHEN txn_type='In' THEN quantity ELSE -quantity END) FROM stock_transactions WHERE inventory_id=i.id),0) AS current_stock
+    FROM projects p
+    JOIN project_products pp ON pp.project_id=p.id AND pp.is_deleted=0
+    JOIN product_items pit ON pit.product_id=pp.product_id AND pit.is_deleted=0
+    JOIN inventories i ON i.id=pit.inventory_id
+    WHERE p.is_deleted=0 AND i.name LIKE '%X%'
+    UNION ALL
+    SELECT p.id, p.name, i.id, i.name, i.model,
+      pi.quantity,
+      COALESCE(i.opening_quantity,0) + COALESCE((SELECT SUM(CASE WHEN txn_type='In' THEN quantity ELSE -quantity END) FROM stock_transactions WHERE inventory_id=i.id),0)
+    FROM projects p
+    JOIN project_item pi ON pi.project_id=p.id
+    JOIN inventories i ON i.id=pi.inventory_id
+    WHERE p.is_deleted=0 AND i.name LIKE '%X%'
+  ) t
+  GROUP BY t.project_id, t.project_name, t.inventory_id, t.item_name, t.item_model, t.current_stock
+  HAVING SUM(t.required_qty) > t.current_stock
+  ORDER BY shortage DESC
+
+  CRITICAL: NEVER reference i.opening_quantity directly in HAVING — that causes "Unknown column" errors in MySQL. Always pre-compute current_stock in the inner subquery and use the alias in HAVING.
 - GLOBAL INVENTORY SHORTAGE: "inventory items ki shortage" (without project context) means items where
   current_stock < inventories.min_quantity. shortage = min_quantity - current_stock.
   current_stock for global shortage = COALESCE(opening_quantity, 0) + net stock_transactions (In minus Out).
