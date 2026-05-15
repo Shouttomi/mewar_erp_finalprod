@@ -1,0 +1,69 @@
+# ── Virtual environments ────────────────────────────────────────────
+env/
+venv/
+.venv/
+
+# ── Secrets ─────────────────────────────────────────────────────────
+.env
+
+# ── Python cache ─────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── IDE / OS ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.claude/
+*.DS_Store
+Thumbs.db
+
+# ── Logs & runtime files ──────────────────────────────────────────────
+*.log
+logs.json
+chat_history.json
+chatbot_reqres.log
+
+# ── Test artifacts & reports ──────────────────────────────────────────
+chatbot_100_test_report.json
+chatbot_test_log.json
+chatbot_test_results.json
+chatbot_full_test_results.json
+debug_out.json
+final_regression.json
+final_test.json
+full_test_final.json
+test_results_raw.json
+db_check.json
+detail_check.json
+response.json
+
+# ── Archives / large binaries ─────────────────────────────────────────
+*.zip
+*.rar
+*.tar.gz
+
+# ── AI model weights (too big for git: 19 GB + 3.5 GB) ────────────────
+models/
+ollama/
+*.bin
+*.gguf
+*.safetensors
+
+# ── Excel / binary data ───────────────────────────────────────────────
+*.xlsx
+*.xls
+
+# ── Server output files ───────────────────────────────────────────────
+test_injection_out.txt
+test_output.txt
+test_retest.txt
+
+# ── SQL dumps ─────────────────────────────────────────────────────────
+*.sql
+
+# ── Misc generated ────────────────────────────────────────────────────
+tmp_magna.txt
+

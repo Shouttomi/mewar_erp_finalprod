@@ -1,0 +1,35 @@
+# ── Web framework ─────────────────────────────────────────────────────────────
+fastapi>=0.135
+uvicorn>=0.42
+gunicorn>=23.0; sys_platform != "win32"
+python-multipart>=0.0.22
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy>=2.0
+pymysql>=1.1
+cryptography>=46.0
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
+python-jose[cryptography]
+passlib[bcrypt]
+
+# ── Validation & env ──────────────────────────────────────────────────────────
+pydantic>=2.12
+python-dotenv>=1.2
+
+# ── HTTP client ───────────────────────────────────────────────────────────────
+requests>=2.31
+
+# ── AI providers (NL2SQL pipeline) ────────────────────────────────────────────
+# SambaNova + Groq both use the OpenAI-compatible client
+openai>=2.30
+
+# ── Scheduler (used by chatbot_final_prod for background jobs) ────────────────
+apscheduler>=3.10
+
+# ── Fuzzy text matching (used by chatbot intent detector) ─────────────────────
+rapidfuzz>=3.14
+
+# NOTE: sentence-transformers, transformers, faiss-cpu are intentionally NOT
+# included — semantic search is disabled in code (incompatible with Python 3.13).
+# NOTE: cerebras-cloud-sdk removed — Cerebras provider is commented out in code.
