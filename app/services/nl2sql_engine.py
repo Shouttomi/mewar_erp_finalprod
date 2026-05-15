@@ -7,25 +7,31 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-# ── Keys ─────────────────────────────────────────────────────────────────────
-# All SambaNova keys — engine rotates on 429
-SAMBANOVA_KEYS = list(filter(None, [
-    os.getenv("SAMBANOVA_API_KEY", "").strip(),
-    "c242c5a6-80a3-4573-a319-0a06ccc310c9",
-    "42e08bfb-aba1-47ff-8507-fce5c16d113f",
-    "294d38c1-191c-4d66-9a8c-4bf020947eb7",
-    "66268ac9-7dc2-4580-b688-76aebe683ba9",
-    "5c299802-1c45-4ddb-ae39-566f0a017553",
-    "ec3ff8ca-4239-4bcd-8c03-1d2a10830778",
-]))
+# ── Keys (all from env vars) ──────────────────────────────────────────────────
+# SambaNova: comma-separated list of up to 7 keys for rate-limit rotation.
+# Example: SAMBANOVA_API_KEYS=key1,key2,key3
+SAMBANOVA_KEYS = [
+    k.strip() for k in os.getenv("SAMBANOVA_API_KEYS", "").split(",")
+    if k.strip()
+]
+# Backward compat: also accept the single-key form
+_single_sb = os.getenv("SAMBANOVA_API_KEY", "").strip()
+if _single_sb and _single_sb not in SAMBANOVA_KEYS:
+    SAMBANOVA_KEYS.insert(0, _single_sb)
 SAMBANOVA_KEY = SAMBANOVA_KEYS[0] if SAMBANOVA_KEYS else ""
-GEMINI_KEY    = os.getenv("GEMINI_API_KEY", "").strip()
-# Both Gemini keys for rotation
-GEMINI_KEYS = list(filter(None, [
-    os.getenv("GEMINI_API_KEY", "").strip(),
-    "AIzaSyBne10lUKskfQO3TcHwISLwYyVr8yOUoec",
-]))
-GROQ_KEYS     = list(filter(None, [
+
+# Gemini: comma-separated list of up to 2 keys for rotation
+GEMINI_KEYS = [
+    k.strip() for k in os.getenv("GEMINI_API_KEYS", "").split(",")
+    if k.strip()
+]
+_single_gm = os.getenv("GEMINI_API_KEY", "").strip()
+if _single_gm and _single_gm not in GEMINI_KEYS:
+    GEMINI_KEYS.insert(0, _single_gm)
+GEMINI_KEY = GEMINI_KEYS[0] if GEMINI_KEYS else ""
+
+# Groq: two named env vars
+GROQ_KEYS = list(filter(None, [
     os.getenv("GROQ_API_KEY_1"),
     os.getenv("GROQ_API_KEY_2"),
 ]))

@@ -235,24 +235,21 @@
 
 
 import os
-import urllib.parse
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# 1. Load environment variables from .env (for local) or Vercel Settings (for live)
+# Load env vars from .env (local dev) or Render/Vercel dashboard (production)
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# 2. Setup the Remote Connection if DATABASE_URL is missing in .env
 if not DATABASE_URL:
-    user = "u512872665_user"
-    password = urllib.parse.quote_plus("a3nQyY7RT;G9")
-    host = "auth-db1830.hstgr.io"
-    port = "3306"
-    dbname = "u512872665_db"
-    DATABASE_URL = f"mysql+pymysql://{user}:{password}@{host}:{port}/{dbname}"
+    raise RuntimeError(
+        "DATABASE_URL is not set. "
+        "Set it in your .env file (local) or Render/Vercel dashboard (deploy). "
+        "Format: mysql+pymysql://USER:PASSWORD@HOST:3306/DBNAME"
+    )
 
 # 3. Create the engine with connection stability settings for remote hosts
 engine = create_engine(
