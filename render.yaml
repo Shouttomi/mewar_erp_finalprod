@@ -4,7 +4,7 @@ services:
     runtime: python
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn -w 2 -k uvicorn.workers.UvicornWorker --timeout 120 -b 0.0.0.0:$PORT app.main:app"
-    healthCheckPath: /health
+    healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
         value: "3.13.0"
@@ -13,34 +13,27 @@ services:
       - key: CORS_ORIGINS
         value: "*"
 
-      # ── Main ERP database (Hostinger) ────────────────────────────
-      - key: DATABASE_URL
-        sync: false   # set this in Render dashboard → Environment
-
-      # ── Chatbot operational DB (entity_aliases, feedback, etc.) ──
-      # Point to same Hostinger DB or a separate chatbot schema
-      - key: LOCAL_DATABASE_URL
-        sync: false   # set this in Render dashboard → Environment
-
-      # ── LLM API Keys (at least one required for chatbot) ─────────
-      - key: CEREBRAS_API_KEY
-        sync: false
-
-      - key: GEMINI_API_KEY
-        sync: false
-
-      - key: OPENROUTER_API_KEY
-        sync: false
-
-      - key: GROQ_API_KEY_1
-        sync: false
-
-      - key: GROQ_API_KEY_2
-        sync: false
-
-      - key: DEEPSEEK_API_KEY
-        sync: false
-
-      # ── App environment ───────────────────────────────────────────
+      # ── App environment ─────────────────────────────────────────
       - key: ENVIRONMENT
         value: production
+
+      # ── Database (optional — falls back to hardcoded in code) ───
+      # Uncomment in Render dashboard if you want to override the
+      # default Hostinger DB hardcoded in app/db/database.py
+      - key: DATABASE_URL
+        sync: false   # set in Render dashboard → Environment (optional)
+
+      # ── LLM keys (optional — code has hardcoded fallbacks) ──────
+      # SambaNova is the primary provider, Gemini and Groq are fallbacks.
+      # Code has hardcoded keys; these env vars override them if set.
+      - key: SAMBANOVA_API_KEY
+        sync: false   # optional
+
+      - key: GEMINI_API_KEY
+        sync: false   # optional
+
+      - key: GROQ_API_KEY_1
+        sync: false   # optional
+
+      - key: GROQ_API_KEY_2
+        sync: false   # optional
