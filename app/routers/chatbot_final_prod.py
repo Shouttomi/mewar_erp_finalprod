@@ -58,6 +58,21 @@ _ERP_KEYWORDS = {
     "total", "list", "count", "kitni", "sabhi", "saare",
     # query action words — any sentence starting with these is likely ERP
     "show", "find", "get", "check", "all", "mere", "mera",
+    # ── Item nouns (factory/inventory items) ──
+    "bearing", "bearings", "bolt", "bolts", "plate", "plates", "motor", "motors",
+    "screw", "screws", "nut", "nuts", "washer", "washers", "pipe", "pipes",
+    "valve", "valves", "pump", "pumps", "tool", "tools", "rod", "rods",
+    "belt", "belts", "gear", "gears", "channel", "channels", "sleeve", "sleeves",
+    "spring", "springs", "shaft", "shafts", "ring", "rings", "seal", "seals",
+    "wire", "cable", "sheet", "angle", "beam", "flange", "coupling", "machine",
+    "machines", "feeder", "conveyor", "hopper", "crusher",
+    # ── English question/quantity words ──
+    "have", "much", "many", "how", "when", "where", "which", "what", "who",
+    "deadline", "due", "date", "available", "running", "pending", "completed",
+    "approved", "rejected", "issued", "ordered", "draft",
+    # ── Hinglish helpers ──
+    "banata", "bana", "bani", "kya", "konsa", "kaunsa", "kaunsi", "konsi",
+    "wala", "wali", "wale", "hain", "hai", "ho",
 }
 
 _POOR_SIGNALS = [
